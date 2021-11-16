@@ -3,6 +3,7 @@ import * as data from "./config.json";
 import dotenv from "dotenv";
 import join from "./commands/join.js";
 import leave from "./commands/leave.js"
+import play from "./commands/play.js"
 
 dotenv.config()
 
@@ -33,23 +34,26 @@ export const message = client.on('message', async message => {
     textChannel: message.channel,
     voiceChannel: null,
     connection: null,
-    songs: [],
+    song: null,
     volume: 5,
     playing: true,
   };
-  queue.set(message.guild.id, queueContract);
 
   const serverQueue = queue.get(message.guild.id);
 
-  setTimeout(() => leave(message, serverQueue), 60000 * 120);
+  setTimeout(() => leave(message, serverQueue), 60000 * 360);
 
   if (message.content.startsWith(`${config.prefix}join`)) {
-    join(message, serverQueue, botIsActive);
+    join(message, queueContract);
     if (botIsActive === true) {
       message.channel.send("i'm already in! 😾")
     } else {
-      message.channel.send("nekomancer is in the house!! ☠️☠️ 😸 ☠️☠️");
-      botIsActive = true;
+      if (message.member.voice.channel === null) {
+        message.channel.send("you need to be connected in a voice channel to play music, boomer 😾")
+      } else {
+        message.channel.send("nekomancer is in the house!! ☠️☠️ 😸 ☠️☠️");
+        botIsActive = true;
+      }
     }
   }
   if (message.content.startsWith(`${config.prefix}leave`)) {
@@ -61,6 +65,8 @@ export const message = client.on('message', async message => {
       botIsActive = false;
     }
   }
-
+  if (message.content.startsWith(`${config.prefix}play`)) {
+    play(message, message.guild);
+  }
 });
 
